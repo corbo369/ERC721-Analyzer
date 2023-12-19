@@ -1,38 +1,131 @@
 .App {
+  background-color: lightgray;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+
+.form-container {
+  height: 10vh;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+form {
+  margin-top: 2.7vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  align-items: center;
+  width: 100%;
+}
+
+label {
+  width: 10vh;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+input {
+  padding: 8px;
+  margin-right: 10px;
+  width: 24vw;
+  box-sizing: border-box;
+}
+
+button {
+  padding: 10px;
+  background-color: #4caf50;
   color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.App-link {
-  color: #61dafb;
+button:hover {
+  background-color: #45a049;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+ul {
+  padding: 0 4.5vw;
+  list-style-type: none;
+  text-align: center;
+  margin-top: 0vh;
+}
+
+li {
+  background-color: white;
+  display: flex;
+  align-items: center;
+  list-style-type: none;
+  border: solid .12vh black;
+  height: 3.3vh;
+}
+
+h1 {
+  font-size: 4vh;
+}
+
+a {
+  text-decoration: none;
+}
+
+.title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  text-shadow: .12vh .12vh white;
+}
+
+.infobar {
+  display: flex;
+  align-items: center;
+  padding: 0 4.5vw;
+  font-size: 2.7vh;
+  text-shadow: .12vh .12vh black;
+  height: 100%;
+  border-top: solid .33vh black;
+}
+
+.type {
+  font-size: 2.7vh;
+  text-shadow: .12vh .12vh black;
+  height: 100%;
+  width: 9vw;
+  border-left: solid .41vh black;
+  border-right: solid .12vh black;
+}
+
+#mint {
+  color: lightsteelblue;
+}
+
+#buy {
+  color: tomato;
+}
+
+#sell {
+  color: palegreen;
+}
+
+.name {
+  height: 100%;
+  width: 33vw;
+  border-right: solid .12vh black;
+}
+
+.id {
+  height: 100%;
+  width: 9vw;
+  border-right: solid .12vh black;
+}
+
+.hash {
+  height: 100%;
+  width: 63vw;
+  border-right: solid .12vh black;
+}
+
+.date {
+  height: 100%;
+  width: 9vw;
+  border-right: solid .41vh black;
 }
