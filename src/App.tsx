@@ -14,11 +14,39 @@ interface ERC721Transaction {
     to: string;
     hash: string;
     timeStamp: string;
+    cost: string;
 }
 
 const App: React.FC = () => {
     const [address, setAddress] = useState<string>('');
     const [transactions, setTransactions] = useState<ERC721Transaction[]>([]);
+
+    const getTransactionDetails = async (txHash: string): Promise<string> => {
+        try {
+            const apiUrl = 'https://api.etherscan.io/api';
+            const response = await axios.get(apiUrl, {
+                params: {
+                    module: 'proxy',
+                    action: 'eth_getTransactionByHash',
+                    txhash: txHash,
+                    apiKey: etherscanApiKey,
+                },
+            });
+
+            if (response.data.result) {
+                // `value` is in Wei, convert it to Ether
+                const valueInWei = response.data.result.value;
+                const valueInEther = ethers.formatEther(valueInWei);
+                return valueInEther;
+            } else {
+                throw new Error('Transaction details not found');
+            }
+        } catch (error) {
+            // @ts-ignore
+            console.error(`Failed to fetch transaction details for hash: ${txHash}`, error.message);
+            return '0';
+        }
+    };
 
     const getERC721MintTransactions = async (address: string): Promise<void> => {
         try {
@@ -36,31 +64,54 @@ const App: React.FC = () => {
             });
 
             if (response.data.status === '1') {
-                const formattedTransactions: ERC721Transaction[] = response.data.result.map(
-                    (rawTransaction: any) => {
-                        let id = rawTransaction.tokenID;
-                        if (id > 10000000) id = 0;
+                const rawTransactions = response.data.result;
+                const tokenOwnership: Record<string, string> = {};
+
+                // Track token ownership based on all transactions
+                rawTransactions.forEach((tx: any) => {
+                    const tokenKey = `${tx.contractAddress}:${tx.tokenID}`;
+                    if (tx.to.toLowerCase() === address.toLowerCase()) {
+                        tokenOwnership[tokenKey] = tx.to.toLowerCase();
+                    }
+                    if (tx.from.toLowerCase() === address.toLowerCase()) {
+                        delete tokenOwnership[tokenKey];
+                    }
+                });
+
+                // Filter transactions for tokens currently owned by the address
+                const filteredTransactions = rawTransactions.filter((tx: any) => {
+                    const tokenKey = `${tx.contractAddress}:${tx.tokenID}`;
+                    return tokenOwnership[tokenKey] === address.toLowerCase();
+                });
+
+                // Fetch transaction details and include mint/buy costs
+                const formattedTransactions: ERC721Transaction[] = await Promise.all(
+                    filteredTransactions.map(async (rawTransaction: any) => {
+                        const mintOrBuyCost = await getTransactionDetails(rawTransaction.hash);
                         return {
                             tokenName: rawTransaction.tokenName,
                             tokenSymbol: rawTransaction.tokenSymbol,
                             contractAddress: rawTransaction.contractAddress,
-                            tokenID: id,
+                            tokenID: rawTransaction.tokenID,
                             from: rawTransaction.from,
                             to: rawTransaction.to,
                             hash: rawTransaction.hash,
                             timeStamp: rawTransaction.timeStamp,
+                            cost: mintOrBuyCost,
                         };
-                    }
+                    })
                 );
+
                 setTransactions(formattedTransactions);
             } else {
                 throw new Error('Failed to fetch ERC721 transactions');
             }
         } catch (error) {
             // @ts-ignore
-            throw new Error(error.message || 'Error fetching ERC721 transactions');
+            console.error('Error:', error.message || 'Error fetching ERC721 transactions');
         }
     };
+
 
     const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
@@ -117,7 +168,7 @@ const App: React.FC = () => {
                         TOKEN NAME (SYMBOL)
                     </div>
                     <div className="id">
-                        TOKEN ID
+                        COST
                     </div>
                     <div className="hash">
                         ERC721 TXN HASH
@@ -147,7 +198,7 @@ const App: React.FC = () => {
                                 <a href={`https://etherscan.io/token/${tx.contractAddress}`} target="_">({tx.tokenSymbol})</a>
                         </div>
                         <div className="id">
-                            #{tx.tokenID}
+                            {tx.cost}
                         </div>
                         <div className="hash">
                             <a href={`https://etherscan.io/tx/${tx.hash}`} target="_">{tx.hash}</a>
